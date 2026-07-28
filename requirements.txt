@@ -1,0 +1,23 @@
+# Core
+numpy>=1.24
+scipy>=1.10           # linear_sum_assignment (Hungarian algorithm)
+torch>=2.4
+transformers>=4.45
+accelerate>=0.34
+pillow>=10.0
+pymupdf>=1.24         # PDF rendering and text-layer verification
+
+# Retrieval / parsing
+rank-bm25>=0.2.2      # BM25 resolver ablation
+docling>=2.0          # independent layout parser for the cross-parser check
+
+# Serving / training (only needed for the training stage)
+vllm>=0.6
+peft>=0.13            # LoRA
+
+# Judge API client (only needed for judge-based metrics)
+google-genai>=1.0
+
+# Figures
+matplotlib>=3.8
+scienceplots>=2.1

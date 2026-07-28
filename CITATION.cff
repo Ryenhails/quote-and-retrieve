@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the accompanying paper."
+title: "Evidence Attribution in Visual Document Understanding without Coordinates or Region Labels"
+abstract: >-
+  Code for a controlled comparison of evidence interfaces in visual document
+  question answering, together with a region-label-free reinforcement learning
+  recipe for improving evidence attribution.
+authors:
+  - given-names: Zhuchenyang
+    family-names: Liu
+  - given-names: Yao
+    family-names: Zhang
+  - given-names: Yu
+    family-names: Xiao
+license: MIT
+repository-code: "https://github.com/Ryenhails/quote-and-retrieve"
+url: "https://arxiv.org/abs/2607.24651"
+keywords:
+  - evidence attribution
+  - visual document understanding
+  - attribution hallucination
+  - vision-language models
+  - multimodal retrieval
+  - reinforcement learning
+preferred-citation:
+  type: article
+  title: "Evidence Attribution in Visual Document Understanding without Coordinates or Region Labels"
+  authors:
+    - given-names: Zhuchenyang
+      family-names: Liu
+    - given-names: Yao
+      family-names: Zhang
+    - given-names: Yu
+      family-names: Xiao
+  journal: "arXiv preprint arXiv:2607.24651"
+  year: 2026
+  url: "https://arxiv.org/abs/2607.24651"
