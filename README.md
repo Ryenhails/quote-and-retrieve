@@ -96,11 +96,11 @@ src/
   reward_longdoc_grpo.py      the gated reward
   reward_service.py           reward server used during training
   make_figures.py             all figures in the paper
-configs/    rollout prompt template
+configs/    rollout prompt template and the language-interface system prompt
 slurm/      one batch script per stage; paths are placeholders, see below
 examples/   four synthetic questions under both interfaces
 tests/      scoring-protocol tests, runnable without any data
-docs/       scoring protocol and record format
+docs/       scoring protocol, record format, and how to combine code + model + data
 ```
 
 The batch scripts use placeholders (`${PROJECT_ROOT}`, `${ENV_MAIN}`, `<PARTITION>`,
@@ -188,6 +188,21 @@ reports both.
 Full details, including the two protocol choices that are ours rather than the benchmark's, are
 in [`docs/scoring_protocol.md`](docs/scoring_protocol.md); the record format is in
 [`docs/data_format.md`](docs/data_format.md). Both are asserted by the test suite.
+
+---
+
+## Released artifacts
+
+| artifact | what it is |
+|---|---|
+| [🤗 quote-and-retrieve-eval](https://huggingface.co/datasets/Ryenhails/quote-and-retrieve-eval) | the 719-question verified evaluation set: identifiers, verification metadata, and normalised ground-truth boxes |
+| [🤗 quote-and-retrieve-8b-grpo](https://huggingface.co/Ryenhails/quote-and-retrieve-8b-grpo) | Qwen3-VL-8B trained with the region-label-free GRPO recipe |
+
+The three pieces are deliberately separate, because the division of labour is the point: **the
+model only writes text**, this repository turns its quotes into page regions, and the dataset says
+which regions were correct. [`docs/using_the_release.md`](docs/using_the_release.md) is the map
+between them, with the exact commands to reproduce the trained model's row of the main table and
+to run the model on your own documents.
 
 ---
 
