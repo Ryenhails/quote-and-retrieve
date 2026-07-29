@@ -139,13 +139,40 @@ always returns some block for every quote, including for a quote that matches no
 
 ---
 
-## 4. Retrain the recipe on your own data
+## 4. Build the training set
 
 The reward needs questions with gold answers and the documents they concern. It does **not** need
-region labels.
+region labels, which is why any document QA corpus works as a training source.
+
+The released model was trained on a set built from [LongDocURL](https://arxiv.org/abs/2412.18424)
+with `src/build_grpo_longdoc.py`. The construction is:
+
+1. Start from LongDocURL's long-document QA items, keeping those whose answers are self-contained
+   enough to be judged against a model answer.
+2. For each question, render a window of up to 30 pages centred on the annotated evidence pages, at
+   the same per-page pixel budget as evaluation (1 megapixel per page, 10 megapixels per document).
+   The evidence-page annotation is used only to place the window and never enters the reward.
+3. Store the gold answer as the ground truth the judge compares against. No region label is stored,
+   because none is used.
+4. Split off 5 percent for validation, giving **1,584 training questions over 349 documents with 83
+   held out**.
+5. Run a whole-text document fingerprint check against the evaluation PDFs and drop any overlap, so
+   nothing in training appears in the evaluation set.
 
 ```bash
-python src/build_grpo_longdoc.py --corpus /path/to/your/qa_corpus
+python src/build_grpo_longdoc.py \
+    --refined  /path/to/longdocurl_items.jsonl \
+    --pages_dir /path/to/render/cache \
+    --out       data/grpo/train.jsonl \
+    --val_frac 0.05 --pixel_budget 10000000 --max_pixels_cap 1000000
+```
+
+Point `--refined` at any corpus with the same shape, a question, a gold answer, and a source PDF,
+to train the recipe on your own domain.
+
+## 5. Run the training
+
+```bash
 sbatch slurm/serve_judge.sh          # vision-language judge that scores retrieved crops
 sbatch slurm/grpo_longdoc_chain.sh   # chained GRPO jobs
 ```
@@ -153,7 +180,8 @@ sbatch slurm/grpo_longdoc_chain.sh   # chained GRPO jobs
 The judge reads the question, the gold answer, the model's answer, and crops of the cited regions,
 and returns answer correctness, evidence relevance, and evidence coverage. The reward multiplies
 the answer term by the evidence terms, so evidence only counts when the answer is already correct.
-See `src/reward_longdoc_grpo.py`.
+See `src/reward_longdoc_grpo.py`. The released model used 8 rollouts per question at temperature
+1.0 for 3 epochs (144 steps), with LoRA r=64 on the language model and the vision tower frozen.
 
 ---
 
