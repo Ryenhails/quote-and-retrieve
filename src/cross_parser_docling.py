@@ -9,9 +9,12 @@ Judge-free: only recall and ceiling are computed downstream.
 
 Usage: python src/docling_parse.py [--shard K --num-shards N]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, os, sys, time
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 OUT_DIR = f"{ROOT}/data/citevqa/docling_cache"
 

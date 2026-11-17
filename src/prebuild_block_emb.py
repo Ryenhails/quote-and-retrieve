@@ -4,14 +4,17 @@ the eval matrix does not pay the embedding cost inline. Replicates exactly the b
 logic of match_wholedoc.py: render each page at 150 DPI, crop every MinerU block, embed the block
 image with Qwen3-VL-Embedding-2B, and save E/pages/bboxes to cache/block_emb/<stem>.npz.
 Idempotent: skips docs already cached. Run AFTER MinerU parsing (needs mineru_cache/<stem>.json)."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import sys, json, os
-sys.path.insert(0, "${PROJECT_ROOT}/../rerank-highlight")
+sys.path.insert(0, os.path.expandvars("${QWEN3VL_EMB_REPO}"))
 import numpy as np, torch, fitz
 from PIL import Image
 from scripts.qwen3_vl_embedding import Qwen3VLEmbedder
 
-ROOT = "${PROJECT_ROOT}"
-EMB_CACHE = "${PROJECT_ROOT}/../cache/block_emb"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
+EMB_CACHE = os.path.expandvars("${QR_CACHE}/block_emb")
 MINERU = f"{ROOT}/data/citevqa/mineru_cache"
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 os.makedirs(EMB_CACHE, exist_ok=True)
@@ -24,7 +27,7 @@ def crop(page_img, bbox):
     return page_img.crop((x1, y1, x2, y2))
 
 def main():
-    mp = "${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-Embedding-2B/snapshots"
+    mp = os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-Embedding-2B/snapshots")
     mp = os.path.join(mp, sorted(os.listdir(mp))[0])
     pairs = {}
     for l in open(BENCH):

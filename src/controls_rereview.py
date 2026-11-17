@@ -14,6 +14,9 @@ comparable with Tables 1 and 3.
 
 Usage: python src/controls_rereview.py <subcommand>
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, os, re, sys, random, statistics
 from collections import defaultdict, Counter
 
@@ -21,7 +24,7 @@ sys.path.insert(0, "src")
 from score_citevqa import iou_hit
 from mineru_ceiling import blocks_for
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 CACHE = f"{ROOT}/data/citevqa/mineru_cache"
 JUDGE = f"{ROOT}/outputs/judge/batch_results_all.jsonl"

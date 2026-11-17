@@ -14,6 +14,9 @@ Also measures quote fidelity per backbone: the fraction of quotes that appear ve
 
 Usage: python src/resolver_ablation.py [--conds qwen3vl,gemma3,...]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, math, os, re, sys, statistics
 from collections import defaultdict
 
@@ -26,7 +29,7 @@ try:
 except Exception:
     HAVE_SCIPY = False
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 CACHE = f"{ROOT}/data/citevqa/mineru_cache"
 MATRIX = f"{ROOT}/outputs/matrix"

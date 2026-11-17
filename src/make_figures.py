@@ -10,6 +10,9 @@ fig5  qualitative 3-panel     -> paper/latex/figs/fig_cases.pdf       (full widt
 
 Usage: python src/make_figures.py [fig3|figa1|figa2|mine5|fig5|all]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import json, re, sys, os
 import numpy as np
 import matplotlib
@@ -19,7 +22,7 @@ import scienceplots  # noqa: F401
 plt.style.use(["science", "no-latex"])
 from matplotlib.patches import Rectangle, FancyBboxPatch
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 FIGS = f"{ROOT}/paper/latex/figs"
 os.makedirs(FIGS, exist_ok=True)
 

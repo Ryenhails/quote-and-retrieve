@@ -8,12 +8,15 @@ The `answer` ground_truth carries everything the reward service needs to score W
 re-deriving it: index (-> block_emb cache key), question, gt_answer, doc_no, pdf_path,
 page_window. Images are rendered at the same per-page pixel budget as rollout.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import json, os, math, argparse
 from pathlib import Path
 import fitz
 from PIL import Image
 
-ROOT = Path("${PROJECT_ROOT}")
+ROOT = Path(os.path.expandvars("${PROJECT_ROOT}"))
 
 # same NL-grounding contract as rollout/eval (answer + verbatim quotes, JSON)
 SYSTEM_PROMPT_NL = """# Document Analysis Assistant

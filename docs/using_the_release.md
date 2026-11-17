@@ -81,8 +81,9 @@ python src/match_wholedoc.py --pred outputs/matrix/grpo_nl/predictions.jsonl
 python src/score_citevqa.py outputs/matrix/grpo_nl/predictions.jsonl
 ```
 
-Expected, matching the paper: evidence recall 51.3 at IoU 0.5, same-page recall 73.8, citation
-precision 26.5, averaging 4.6 citations per response. SAA (33.8) and the hallucination rate (28.4)
+Expected: evidence recall 51.2 at IoU 0.5, same-page recall 73.8, citation precision 26.4,
+averaging 4.6 citations per response. The paper's main table reports 51.3 and 26.5 because it
+averages over the 716 questions whose judge scores parsed. SAA (33.8) and the hallucination rate (28.4)
 additionally need the judge pass in step 4 of the main README, because they depend on a judge
 scoring answers and retrieved crops.
 
@@ -147,25 +148,41 @@ region labels, which is why any document QA corpus works as a training source.
 The released model was trained on a set built from [LongDocURL](https://arxiv.org/abs/2412.18424)
 with `src/build_grpo_longdoc.py`. The construction is:
 
-1. Start from LongDocURL's long-document QA items, keeping those whose answers are self-contained
-   enough to be judged against a model answer.
-2. For each question, render a window of up to 30 pages centred on the annotated evidence pages, at
-   the same per-page pixel budget as evaluation (1 megapixel per page, 10 megapixels per document).
-   The evidence-page annotation is used only to place the window and never enters the reward.
-3. Store the gold answer as the ground truth the judge compares against. No region label is stored,
-   because none is used.
-4. Split off 5 percent for validation, giving **1,584 training questions over 349 documents with 83
-   held out**.
-5. Run a whole-text document fingerprint check against the evaluation PDFs and drop any overlap, so
-   nothing in training appears in the evaluation set.
+1. Start from LongDocURL's question-answer items whose page window is at most 30 pages, sampled
+   in proportion to question type. This gives 2,252 candidate questions.
+2. Sample eight responses per candidate from the base model and score them with the reward.
+   Questions on which the base model already obtains a consistently high reward are discarded,
+   because every response gets the same reward and the group-relative advantage is zero. 1,667
+   questions remain. Their identifiers are released in `release/grpo_train_ids.jsonl`, so this
+   step does not have to be rerun.
+3. For each question, render its page window (LongDocURL's `start_end_idx`, at most 30 pages) at
+   ten megapixels per window with a one-megapixel cap per page. The window is used only to choose
+   the input pages and never enters the reward.
+4. Store the gold answer as the ground truth the judge compares against. No region label is stored,
+   because none is used. Split off the first 5 percent for validation, giving **1,584 training
+   questions over 349 documents with 83 held out**.
+5. `src/check_leakage_robust.py` compares whole-document text fingerprints between the training
+   and the evaluation PDFs. The five LongDocURL documents it flagged are not in the training set.
+
+To rebuild the exact set from the public LongDocURL release
+([`dengchao/LongDocURL`](https://huggingface.co/datasets/dengchao/LongDocURL), files
+`LongDocURL_public.jsonl` and `pdf_files.tar.gz`):
 
 ```bash
+python src/rehydrate_grpo_train.py \
+    --ids release/grpo_train_ids.jsonl \
+    --longdocurl /path/to/LongDocURL_public.jsonl \
+    --pdf-root   /path/to/extracted/pdf_files \
+    --out data/longdocurl/grpo_refined.jsonl
+
 python src/build_grpo_longdoc.py \
-    --refined  /path/to/longdocurl_items.jsonl \
-    --pages_dir /path/to/render/cache \
-    --out       data/grpo/train.jsonl \
+    --refined   data/longdocurl/grpo_refined.jsonl \
+    --pages_dir data/longdocurl/grpo_pages \
+    --out       data/longdocurl/grpo/train.jsonl \
     --val_frac 0.05 --pixel_budget 10000000 --max_pixels_cap 1000000
 ```
+
+The identifier file is ordered validation first, so the default split reproduces the released one.
 
 Point `--refined` at any corpus with the same shape, a question, a gold answer, and a source PDF,
 to train the recipe on your own domain.
@@ -173,8 +190,8 @@ to train the recipe on your own domain.
 ## 5. Run the training
 
 ```bash
-sbatch slurm/serve_judge.sh          # vision-language judge that scores retrieved crops
-sbatch slurm/grpo_longdoc_chain.sh   # chained GRPO jobs
+sbatch slurm/mineru_parse_longdoc.sh   # candidate blocks for the training documents
+sbatch slurm/grpo_longdoc_chain.sh     # judge server, reward service, and trainer in one job
 ```
 
 The judge reads the question, the gold answer, the model's answer, and crops of the cited regions,

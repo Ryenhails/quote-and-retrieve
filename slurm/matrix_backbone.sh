@@ -31,9 +31,7 @@ case "$BACKBONE" in
   qwen35_27b)MODEL=$(snap Qwen--Qwen3.5-27B);               BUDGET=187000000; MAXLEN=262144; XFLAG="" ;;
   qwen3vl_30b)MODEL=$(snap Qwen--Qwen3-VL-30B-A3B-Instruct);BUDGET=187000000; MAXLEN=262144; XFLAG="" ;;   # reproduce CiteVQA (ref single-doc Rec 5.6; 3.5 was Overall)
   gemma4_31b)MODEL=$(snap google--gemma-4-31B-it);            BUDGET=187000000; MAXLEN=262144; XFLAG="" ;;   # cross-family reproduce (ref single-doc Rec 10.9)
-  internvl)  MODEL=$(snap OpenGVLab--InternVL3_5-8B);       BUDGET=18750000;  MAXLEN=40960;  XFLAG="" ;;
   gemma3)    MODEL=$(snap google--gemma-3-12b-it);          BUDGET=187000000; MAXLEN=131072; XFLAG="" ;;
-  pixtral)   MODEL=$(snap mistral-community--pixtral-12b);  BUDGET=28700000;  MAXLEN=131072; XFLAG="" ;;
   *) echo "unknown BACKBONE=$BACKBONE"; exit 1 ;;
 esac
 echo "BACKBONE=$BACKBONE MODEL=$MODEL BUDGET=$BUDGET MAXLEN=$MAXLEN PORT=$PORT"

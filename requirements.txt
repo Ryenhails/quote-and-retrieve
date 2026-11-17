@@ -9,10 +9,12 @@ pymupdf>=1.24         # PDF rendering and text-layer verification
 
 # Retrieval / parsing
 rank-bm25>=0.2.2      # BM25 resolver ablation
+mineru==3.2.3         # layout parser (pipeline backend); the paper's blocks come from this version
 docling>=2.0          # independent layout parser for the cross-parser check
+qwen-vl-utils         # needed by the Qwen3-VL-Embedding wrapper
 
 # Serving / training (only needed for the training stage)
-vllm>=0.6
+vllm>=0.6             # the paper's runs used 0.22.1 for evaluation
 peft>=0.13            # LoRA
 
 # Judge API client (only needed for judge-based metrics)

@@ -9,6 +9,9 @@ Render ONLY the page_window (LongDocURL evidence is 100% inside it); per-page pi
 budget scales down for long windows so G-sampling stays tractable. Output: one row per
 item carrying all G raw responses + parsed {answer, evidence:[{page,quote}]}.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, re, random
 from pathlib import Path
 import torch
@@ -95,7 +98,7 @@ def stratified_sample(recs, n, max_nwin):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bench", default=f"{ROOT}/data/longdocurl/longdoc_bench.json")
-    ap.add_argument("--model", default="${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b")
+    ap.add_argument("--model", default=os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"))
     ap.add_argument("--out", default=f"{ROOT}/data/longdocurl/rollout/samples.jsonl")
     ap.add_argument("--n_items", type=int, default=160)
     ap.add_argument("--max_nwin", type=int, default=20)

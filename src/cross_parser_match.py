@@ -9,11 +9,14 @@ assignment produces citations that are scored at page + IoU 0.1/0.3/0.5/0.7.
 
 Usage (under sbatch): python src/cross_parser_match.py
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import json, os, re, sys, statistics
 from collections import defaultdict
 
 sys.path.insert(0, "src")
-sys.path.insert(0, "${PROJECT_ROOT}/../rerank-highlight")
+sys.path.insert(0, os.path.expandvars("${QWEN3VL_EMB_REPO}"))
 import numpy as np
 import torch
 import fitz
@@ -22,11 +25,11 @@ from score_citevqa import iou_hit
 from scripts.qwen3_vl_embedding import Qwen3VLEmbedder
 from scipy.optimize import linear_sum_assignment
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 CACHE = f"{ROOT}/data/citevqa/docling_cache"
 MATRIX = f"{ROOT}/outputs/matrix"
-EMB_CACHE = "${PROJECT_ROOT}/../cache/block_emb_docling"
+EMB_CACHE = os.path.expandvars("${QR_CACHE}/block_emb_docling")
 THRESH = [0.1, 0.3, 0.5, 0.7]
 
 BACKBONES = [
@@ -109,7 +112,7 @@ def main():
           "  ".join(f"@{t} {100*statistics.mean(thr_rec[t]):.1f}" for t in THRESH), flush=True)
 
     # ---------------- embedder ----------------
-    mp = "${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-Embedding-2B/snapshots"
+    mp = os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-Embedding-2B/snapshots")
     if os.path.isdir(mp) and os.path.basename(mp) == "snapshots":
         mp = os.path.join(mp, sorted(os.listdir(mp))[0])
     print(f"loading embedder {mp}", flush=True)

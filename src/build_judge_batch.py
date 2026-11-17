@@ -9,11 +9,14 @@ paper's x20 table; only raw 0-5 satisfies both). SAA/AH are computed later from 
 JSONL line: {"key": "<tag>|<index>|<qa|rel>", "request": {contents, system_instruction, generation_config}}
 Crops are rendered from the page at 150 DPI and cropped by the 0-1000 bbox (crop_bbox), capped per item.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, os, io, base64, re
 import fitz
 from PIL import Image
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 CVP = f"{ROOT}/CiteVQA/prompts"
 QA_SYS = open(f"{CVP}/eval_qa_acc_system.txt").read()
 QA_USER = open(f"{CVP}/eval_qa_acc_user.txt").read()

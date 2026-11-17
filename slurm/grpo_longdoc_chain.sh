@@ -26,7 +26,7 @@ ROOT=${PROJECT_ROOT}
 OUT=$ROOT/outputs/grpo_longdoc
 MODEL=${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b
 JUDGE=$(ls -d ${PROJECT_ROOT}/../cache/models--Qwen--Qwen3.5-9B/snapshots/*/ 2>/dev/null | head -1)
-${ENV_MAIN}=${ENV_MAIN}/bin/python
+PY_MAIN=${ENV_MAIN}/bin/python
 MAXSEG=24
 # unique localhost ports per segment (avoid 'Address already in use' when a node already
 # has something on 8000/8001 from another user/job)
@@ -57,7 +57,7 @@ NEXT=$(sbatch --parsable --dependency=afterany:$SLURM_JOB_ID slurm/grpo_longdoc_
 echo $NEXT > $OUT/.nextjob; echo "[chain] queued successor $NEXT (afterany)"
 
 # ---- preserve PREVIOUS segment's metrics (val curve!) before verl truncates the log ----
-$${ENV_MAIN} $ROOT/src/accumulate_metrics.py $OUT 2>&1 || echo "[chain] accumulate_metrics failed (non-fatal)"
+$PY_MAIN $ROOT/src/accumulate_metrics.py $OUT 2>&1 || echo "[chain] accumulate_metrics failed (non-fatal)"
 
 # ---- 1. vLLM vision judge on GPU 2 (${ENV_INFER} env -> ninja on PATH for GDN JIT) ----
 JUDGE_LOG=$ROOT/logs/grpo_chain_judge_${SLURM_JOB_ID}.log
@@ -78,7 +78,7 @@ done
 REWARD_LOG=$ROOT/logs/grpo_chain_reward_${SLURM_JOB_ID}.log
 CUDA_VISIBLE_DEVICES=2 JUDGE_BASE_URL=http://127.0.0.1:$JPORT/v1 JUDGE_MODEL=judge \
   REWARD_PORT=$RPORT PYTHONPATH=$ROOT/src \
-  $${ENV_MAIN} $ROOT/src/reward_service.py > "$REWARD_LOG" 2>&1 &
+  $PY_MAIN $ROOT/src/reward_service.py > "$REWARD_LOG" 2>&1 &
 REWARD_PID=$!
 for i in $(seq 1 60); do
   kill -0 $REWARD_PID 2>/dev/null || { echo "[reward] DIED"; tail -30 "$REWARD_LOG"; kill $JUDGE_PID; exit 1; }

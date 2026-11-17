@@ -15,21 +15,24 @@ Supports a judge-free selective-prediction curve (abstain below a similarity thr
 
 Run under sbatch on one GPU (slurm/controls_embed.sh).
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import argparse, json, os, re, sys, statistics
 from collections import defaultdict
 
 sys.path.insert(0, "src")
-sys.path.insert(0, "${PROJECT_ROOT}/../rerank-highlight")
+sys.path.insert(0, os.path.expandvars("${QWEN3VL_EMB_REPO}"))
 import numpy as np
 import torch
 from score_citevqa import iou_hit
 from scripts.qwen3_vl_embedding import Qwen3VLEmbedder
 from scipy.optimize import linear_sum_assignment
 
-ROOT = "${PROJECT_ROOT}"
+ROOT = os.path.expandvars("${PROJECT_ROOT}")
 BENCH = f"{ROOT}/data/citevqa/citevqa_singledoc_pub.jsonl"
 MATRIX = f"{ROOT}/outputs/matrix"
-EMB_CACHE = "${PROJECT_ROOT}/../cache/block_emb"
+EMB_CACHE = os.path.expandvars("${QR_CACHE}/block_emb")
 OUT_DIR = f"{ROOT}/outputs/controls"
 THRESH = [0.1, 0.3, 0.5, 0.7]
 
@@ -87,7 +90,7 @@ def rec_multi(gt, preds):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-Embedding-2B/snapshots")
+    ap.add_argument("--model", default=os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-Embedding-2B/snapshots"))
     args = ap.parse_args()
     os.chdir(ROOT)
     os.makedirs(OUT_DIR, exist_ok=True)

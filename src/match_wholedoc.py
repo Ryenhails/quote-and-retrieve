@@ -12,15 +12,18 @@ Reuses model quotes from eval_nlg (controlled: same quotes/blocks/GT/judge as th
 per-page M2-bip run; only candidate SCOPE changes single-page -> whole-doc).
 Outputs eval-format predictions for judging.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import sys, json, os, re, argparse
-sys.path.insert(0, "${PROJECT_ROOT}/../rerank-highlight")
+sys.path.insert(0, os.path.expandvars("${QWEN3VL_EMB_REPO}"))
 import numpy as np, torch, fitz
 from PIL import Image
 from scripts.qwen3_vl_embedding import Qwen3VLEmbedder
 from scipy.optimize import linear_sum_assignment
 
-ROOT="${PROJECT_ROOT}"
-EMB_CACHE="${PROJECT_ROOT}/../cache/block_emb"
+ROOT=os.path.expandvars("${PROJECT_ROOT}")
+EMB_CACHE=os.path.expandvars("${QR_CACHE}/block_emb")
 os.makedirs(EMB_CACHE, exist_ok=True)
 
 def parse_quotes(raw):
@@ -39,7 +42,7 @@ def crop(page_img, bbox):
 
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument("--model", default="${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-Embedding-2B/snapshots")
+    ap.add_argument("--model", default=os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-Embedding-2B/snapshots"))
     ap.add_argument("--pred", default=f"{ROOT}/outputs/eval_nlg/predictions.jsonl")
     ap.add_argument("--bench", default=f"{ROOT}/data/citevqa/citevqa_base_full.jsonl")
     ap.add_argument("--cache", default=f"{ROOT}/data/citevqa/mineru_cache")

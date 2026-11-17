@@ -11,9 +11,12 @@ Pipeline per response (SAME as reward_longdoc / eval):
 Batched 3-pass for throughput: embed ALL quotes once, match (CPU), judge ALL in parallel.
 reward = FLOOR + (1-FLOOR) * gate(ac) * (rel/5) * (cov/5)   [product combiner; user choice]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import qr_paths  # noqa: F401,E402  sets PROJECT_ROOT / QR_CACHE / QWEN3VL_EMB_REPO defaults
 import sys, os, json, re, io, base64, threading
-sys.path.insert(0, "${PROJECT_ROOT}/../rerank-highlight")
-sys.path.insert(0, "${PROJECT_ROOT}/src")
+sys.path.insert(0, os.path.expandvars("${QWEN3VL_EMB_REPO}"))
+sys.path.insert(0, os.path.expandvars("${PROJECT_ROOT}/src"))
 import numpy as np, torch, fitz
 from PIL import Image
 from collections import OrderedDict
@@ -23,8 +26,8 @@ from scipy.optimize import linear_sum_assignment
 from scripts.qwen3_vl_embedding import Qwen3VLEmbedder
 from reward_longdoc import JUDGE_SYS, parse_judge, crop, parse_quotes
 
-EMB_CACHE = "${PROJECT_ROOT}/../cache/ldoc_block_emb"
-EMB_MODEL = os.environ.get("EMB_MODEL", "${PROJECT_ROOT}/../cache/models--Qwen--Qwen3-VL-Embedding-2B/snapshots")
+EMB_CACHE = os.path.expandvars("${QR_CACHE}/ldoc_block_emb")
+EMB_MODEL = os.environ.get("EMB_MODEL", os.path.expandvars("${QR_CACHE}/models--Qwen--Qwen3-VL-Embedding-2B/snapshots"))
 JUDGE_URL = os.environ.get("JUDGE_BASE_URL", "http://127.0.0.1:8000/v1").rstrip("/")
 JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "judge")
 JUDGE_WORKERS = int(os.environ.get("JUDGE_WORKERS", "24"))
